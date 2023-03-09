@@ -10,7 +10,7 @@ import ANSIColoredPrinters
 
 # import Markdown as MarkdownStdlib
 module _Markdown
-    import Markdown
+import Markdown
 end
 const MarkdownStdlib = _Markdown.Markdown
 
@@ -44,7 +44,7 @@ function copy_assets(doc::Documents.Document)
             src = joinpath(assets, each)
             dst = joinpath(builddir, each)
             ispath(dst) && @warn "DocumenterMarkdown: overwriting '$dst'."
-            cp(src, dst; force = true)
+            cp(src, dst; force=true)
         end
     else
         error("assets directory '$(abspath(assets))' is missing.")
@@ -77,11 +77,13 @@ end
 
 function render(io::IO, mime::MIME"text/plain", node::Documents.DocsNode, page, doc)
     # Docstring header based on the name of the binding and it's category.
-    anchor = "<a id='$(node.anchor.id)' href='#$(node.anchor.id)'>#</a>"
-    header = "**`$(node.object.binding)`** &mdash; *$(Utilities.doccat(node.object))*."
-    println(io, anchor, "\n", header, "\n\n")
+    # anchor = "<a id='$(node.anchor.id)' href='#$(node.anchor.id)'>#</a>"
+    # header = "**`$(node.object.binding)`** &mdash; *$(Utilities.doccat(node.object))*."
+    # println(io, anchor, "\n", header, "\n\n")
+    println(io, "::ApiDoc\n#object\n $(node.anchor.id)\n#category\n$(Utilities.doccat(node.object))\n #docstring\n")
     # Body. May contain several concatenated docstrings.
     renderdoc(io, mime, node.docstr, page, doc)
+    println(io, "::")
 end
 
 function renderdoc(io::IO, mime::MIME"text/plain", md::MarkdownStdlib.MD, page, doc)
@@ -126,9 +128,9 @@ function render(io::IO, ::MIME"text/plain", contents::Documents.ContentsNode, pa
     for (count, path, anchor) in contents.elements
         path = mdext(path)
         header = anchor.object
-        url    = string(path, Anchors.fragment(anchor))
-        link   = MarkdownStdlib.Link(header.text, url)
-        level  = Utilities.header_level(header)
+        url = string(path, Anchors.fragment(anchor))
+        link = MarkdownStdlib.Link(header.text, url)
+        level = Utilities.header_level(header)
         print(io, "    "^(level - 1), "- ")
         MarkdownStdlib.plaininline(io, link)
         println(io)
@@ -163,24 +165,36 @@ function render(io::IO, mime::MIME"text/plain", d::Dict{MIME,Any}, page, doc)
         println(io, d[MIME"image/svg+xml"()])
     elseif haskey(d, MIME"image/png"())
         write(joinpath(dirname(page.build), "$(filename).png"), base64decode(d[MIME"image/png"()]))
-        println(io, """
-            ![]($(filename).png)
-            """)
+        println(
+            io,
+            """
+    ![]($(filename).png)
+    """
+        )
     elseif haskey(d, MIME"image/webp"())
         write(joinpath(dirname(page.build), "$(filename).webp"), base64decode(d[MIME"image/webp"()]))
-        println(io, """
-            ![]($(filename).webp)
-            """)
+        println(
+            io,
+            """
+    ![]($(filename).webp)
+    """
+        )
     elseif haskey(d, MIME"image/jpeg"())
         write(joinpath(dirname(page.build), "$(filename).jpeg"), base64decode(d[MIME"image/jpeg"()]))
-        println(io, """
-            ![]($(filename).jpeg)
-            """)
+        println(
+            io,
+            """
+    ![]($(filename).jpeg)
+    """
+        )
     elseif haskey(d, MIME"image/gif"())
         write(joinpath(dirname(page.build), "$(filename).gif"), base64decode(d[MIME"image/gif"()]))
-        println(io, """
-            ![]($(filename).gif)
-            """)
+        println(
+            io,
+            """
+    ![]($(filename).gif)
+    """
+        )
     elseif haskey(d, MIME"text/plain"())
         text = d[MIME"text/plain"()]
         out = repr(MIME"text/plain"(), ANSIColoredPrinters.PlainTextPrinter(IOBuffer(text)))
