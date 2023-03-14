@@ -82,7 +82,8 @@ function render(io::IO, mime::MIME"text/plain", node::Documents.DocsNode, page, 
     # println(io, anchor, "\n", header, "\n\n")
     println(io, """::ApiCard{object="$(node.anchor.id)" category="$(Utilities.doccat(node.object))"}\n#docstring\n""")
     # Body. May contain several concatenated docstrings.
-    renderdoc(io, mime, node.docstr, page, doc)
+    # renderdoc(io, mime, node.docstr, page, doc)
+    println(io, node.docstr)
     println(io, "::")
 end
 
